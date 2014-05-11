@@ -90,7 +90,7 @@ void GascScheduler::resourceOffers(SchedulerDriver* driver,
     if (availableCpus < cpusPerInstance) {
       if (debug) {
         cerr << "Declining offer: need " << cpusPerInstance << " cpus"
-             << " but was offered " << availableCpus;
+             << " but was offered " << availableCpus << endl;
       }
 
       driver->declineOffer(offer.id());
@@ -100,7 +100,8 @@ void GascScheduler::resourceOffers(SchedulerDriver* driver,
     if (availableMemory < memoryPerInstance) {
       if (debug) {
         cerr << "Declining offer: need " << memoryPerInstance << " mb"
-             << " memory but was offered " << availableMemory;
+             << " memory but was offered "
+             << availableMemory << " mb " << endl;
       }
       driver->declineOffer(offer.id());
       continue;
