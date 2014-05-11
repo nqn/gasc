@@ -138,7 +138,7 @@ bool parse(
   }
 
   if (debug) {
-    cout << "Tool command: '" << command << "'";
+    cout << "Tool command: '" << command << "'" << endl;
   }
 
   return true;
