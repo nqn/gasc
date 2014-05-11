@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <pthread.h>
 
 #include <string>
 #include <iostream>
@@ -65,6 +66,7 @@ public:
       cpusPerInstance(cpusPerInstance),
       memoryPerInstance(memoryPerInstance),
       instances(instances),
+      command(command),
       nextTaskId(0) {}
 
   virtual ~GascScheduler() {}
@@ -220,12 +222,10 @@ public:
         daemons.erase(daemonIterator);
       }
 
-      // TODO(nnielsen): Remove from daemon list.
-
     } else if (status.state() == TASK_RUNNING) {
       tasksRunning++;
       if (tasksRunning == instances) {
-        runTool();
+        runTool(driver);
       }
     } else if (status.state() == TASK_FINISHED) {
       tasksFinished++;
@@ -265,14 +265,13 @@ private:
   long memoryPerInstance;
   int instances;
 
+  string command;
+
   int nextTaskId;
 
   map<int, GascDaemon> daemons;
 
-  bool runTool() {
-    // TODO(nnielsen): Write hosts file.
-    // TODO(nnielsen): Fork exec and write output in helper thread.
-    // TODO(nnielsen): launch mpirun.
+  void runTool(SchedulerDriver* driver) {
     std::ofstream hosts("hosts.txt");
 
     map<int, GascDaemon>::iterator daemonIterator = daemons.begin();
@@ -284,10 +283,18 @@ private:
     hosts.close();
 
     if (debug) {
-      cout << "Host file written in 'hosts.txt'" << endl;
+      cout << "Host file written in 'hosts.txt'" << endl
+           << "" << endl;
     }
 
-    return true;
+    FILE* toolStream = popen(command.c_str(), "w");
+
+    // TODO(nnielsen): Do this in thread instead of blocking callback!
+    pclose(toolStream);
+
+    // TODO(nnielsen): join on thread.
+    // TODO(nnielsen): close pipe.
+    driver->stop();
   }
 };
 
